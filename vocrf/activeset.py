@@ -12,7 +12,7 @@ from arsenal.iterextras import groupby2
 from vocrf.model import VoCRF
 from vocrf.score import ScoringModel
 from vocrf.updates.spom import OnlineProx
-from vocrf.pos.instance import MAGIC
+import vocrf.pos.instance
 from vocrf.util import prefix_closure, last_char_sub_closure
 from vocrf.lazygrad.adagrad import LazyRegularizedAdagrad
 
@@ -48,10 +48,13 @@ class ActiveSet(VoCRF):
         # max number of higher-order features =
         #              budget        [green nodes - the max number of 'active' contexts at any time]
         #  x       extensions = |Y|  [yellow nodes - a little room to grow]
-        #  x number of labels        [because that's how we encode features]   XXX: I think this is an overestimate we want |states| x |labels|
+        #  x number of labels        [because that's how we encode features]
+        #  XXX: I think this is an overestimate we want |states| x |labels|
         self.H = max(group_budget * len(Y), len(self.C)) * self.A
+        # TODO: This is UGLY. Get the real number of features
+        MAGIC = vocrf.pos.instance.MAGIC
+        print(vocrf.pos.instance.MAGIC)
         self.D = MAGIC * self.A
-
         self.group_budget = group_budget
         self.regularizer = regularizer / len(self.train)
 
@@ -243,7 +246,7 @@ class ActiveSet(VoCRF):
     def inner_optimization(self, iterations, prox_every=25):
         budget = self.group_budget
         for t in range(iterations):
-            print
+            print('\n')
             np.random.shuffle(self.train)
             for x in iterview(self.train, colors.green % 'Pass %s' % (t+1)):
 
@@ -278,7 +281,8 @@ class ActiveSet(VoCRF):
         dev = self.corpus.evaluate(self.predict, self.dev, 'dev', verbosity=verbosity)
         self.active_features()
         if not self.dev: dev = train   # train is dev, when there is no dev.
-
+        # TODO remove this line, too slow - BRUNO
+        print(f"Active WEIGHTS {len([x for x in self.sparse.w if x != 0])}")
         self.log.append({
             'epoch': 1+len(self.log),
             'train': train,

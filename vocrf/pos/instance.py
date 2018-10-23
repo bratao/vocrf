@@ -4,7 +4,23 @@ from vocrf.sparse import SparseBinaryVector
 from vocrf.util import prefixes, suffixes
 
 # Feature hashing range
-MAGIC = 2**18
+#MAGIC = 2**18
+MAGIC = 0
+
+
+feature_dict = dict()
+max_feature_id = 0
+
+
+def feature_to_id(feature):
+    global max_feature_id
+    global MAGIC
+    if feature in feature_dict:
+        return feature_dict[feature]
+    feature_dict[feature] = max_feature_id
+    max_feature_id += 1
+    MAGIC = max_feature_id
+    return feature_dict[feature]
 
 
 class Instance(object):
@@ -50,6 +66,6 @@ class Instance(object):
             F += P
             F += S
 
-            F = [abs(hash(x)) % MAGIC for x in F]
+            F = [feature_to_id(x) % MAGIC for x in F]
             F.sort()
             self.properties[t] = SparseBinaryVector(F)

@@ -115,7 +115,7 @@ class CoNLL_U(Dataset):
         other.remove(c)
         breakdown = ', '.join('%s: %.2f' % (c, 100 * correct[c] / total[c]) for c in sorted(other))
 
-        print('%s (%s)' % (acc, breakdown))
+        print('\n %s (%s)' % (acc, breakdown))
 
         if verbosity >= 2:
             print('F1 breakdown')
